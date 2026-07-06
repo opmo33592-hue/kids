@@ -390,6 +390,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .nav-link {
@@ -424,6 +425,7 @@
         .theme-toggle-btn {
             width: 56px;
             height: 30px;
+            min-width: 56px;
             background: linear-gradient(135deg, #FFD93D, #FFC107);
             border-radius: 15px;
             position: relative;
@@ -432,6 +434,9 @@
             margin-left: 12px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .dark-mode .theme-toggle-btn { background: linear-gradient(135deg, #4A4A6A, #3A3A5A); }
@@ -445,6 +450,7 @@
             font-size: 14px;
             transition: all 0.4s ease;
             z-index: 2;
+            pointer-events: none;
         }
 
         .dark-mode .theme-toggle-btn::before { content: '🌙'; }
@@ -461,6 +467,7 @@
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             z-index: 1;
+            pointer-events: none;
         }
 
         .dark-mode .theme-toggle-btn::after {
@@ -1420,7 +1427,11 @@
             .hero-stats { justify-content: center; }
 
             .nav .container { flex-wrap: wrap; gap: 12px; }
-            .nav-links { width: 100%; justify-content: center; }
+            .nav-links { 
+                width: 100%; 
+                justify-content: center;
+                flex-wrap: wrap;
+            }
 
             .section-title { font-size: 32px; }
             .stat-card { padding: 16px 20px; }
@@ -1429,6 +1440,10 @@
             .hero-logo { width: 200px; height: 200px; }
             .footer-logo { width: 250px; height: 250px; }
             .footer-floating-logo { width: 150px; height: 150px; }
+            
+            .theme-toggle-btn {
+                margin-left: 8px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1441,6 +1456,29 @@
             .btn { width: 100%; justify-content: center; }
             .footer-logo { width: 200px; height: 200px; }
             .footer-floating-logo { width: 120px; height: 120px; }
+            
+            .nav-links {
+                gap: 4px;
+            }
+            
+            .nav-link {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            
+            .theme-toggle-btn {
+                width: 50px;
+                height: 28px;
+            }
+            
+            .theme-toggle-btn::after {
+                width: 22px;
+                height: 22px;
+            }
+            
+            .dark-mode .theme-toggle-btn::after {
+                left: 25px;
+            }
         }
     </style>
 </head>
@@ -1713,8 +1751,6 @@
         db.enablePersistence().catch(err => console.warn('Offline persistence:', err.code));
         
         console.log('✅ CHILDREN HAVE A LIBRARY - Story Forest Initialized');
-        console.log('📚 Collection: kids_books');
-        console.log('⏰ Reviews auto-delete after 1 year');
 
         function showNotification(m, t) {
             const n = document.getElementById('notification');
@@ -1766,7 +1802,6 @@
                     
                     if (reviewsSnapshot.size > 0) {
                         await batch.commit();
-                        console.log(`🧹 Cleaned ${reviewsSnapshot.size} old reviews`);
                     }
                 }
             } catch (error) {
@@ -1780,33 +1815,38 @@
         const splashScreen = document.getElementById('splashScreen');
         const mainContent = document.getElementById('mainContent');
 
+        // ============ THEME - ALWAYS START DARK, TOGGLE TO LIGHT ============
         function initializeTheme() {
-            const s = localStorage.getItem('theme');
-            if (s === 'dark') document.body.classList.add('dark-mode');
-            else if (s === 'light') document.body.classList.remove('dark-mode');
-            else document.body.classList.add('dark-mode');
+            const saved = localStorage.getItem('theme');
+            // Default to dark mode
+            if (saved === 'light') {
+                document.body.classList.remove('dark-mode');
+            } else {
+                document.body.classList.add('dark-mode');
+            }
         }
 
         function handleSplashScreen() {
-            const s = localStorage.getItem('theme');
-            if (s) {
-                setTimeout(() => {
-                    splashScreen.classList.add('hide');
-                    mainContent.classList.add('visible');
-                }, 1500);
-                return;
-            }
-            setTimeout(() => {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('theme', 'light');
-            }, 1800);
             setTimeout(() => {
                 splashScreen.classList.add('hide');
                 mainContent.classList.add('visible');
-            }, 2500);
+            }, 1500);
         }
 
-        document.getElementById('themeToggle').addEventListener('click', () => {
+        // Theme toggle with touch support for mobile
+        const themeToggle = document.getElementById('themeToggle');
+        
+        themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleTheme();
+        });
+        
+        themeToggle.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            toggleTheme();
+        });
+
+        function toggleTheme() {
             if (document.body.classList.contains('dark-mode')) {
                 document.body.classList.remove('dark-mode');
                 localStorage.setItem('theme', 'light');
@@ -1814,7 +1854,7 @@
                 document.body.classList.add('dark-mode');
                 localStorage.setItem('theme', 'dark');
             }
-        });
+        }
 
         function createParticles() {
             const c = document.getElementById('particles');
@@ -2187,7 +2227,7 @@
                 document.getElementById('reviewText').value = '';
                 selectedStars = 0;
                 updateStarPicker();
-                showNotification('Review submitted! 🎉 (Reviews are kept for 1 year)', 'success');
+                showNotification('Review submitted! 🎉', 'success');
                 
             } catch(e) {
                 console.error('Error:', e);
