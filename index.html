@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#1F4B43">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>CHILDREN HAVE A LIBRARY — Story Forest</title>
+    <meta name="description" content="A magical digital library where kids discover their next favorite book. Browse, review, and buy children's books.">
+    <meta name="keywords" content="children books, kids library, story forest, book reviews, kids reading">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #FFF8E7;
+            --bg-secondary: #FFF0D4;
+            --bg-card: #FFFFFF;
+            --text-primary: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --forest: #1F4B43;
+            --forest-light: #2E6E5D;
+            --coral: #FF6B6B;
+            --coral-dark: #FF5252;
+            --sun: #FFD93D;
+            --sky: #4FC3F7;
+            --border: #F0E6D3;
+            --shadow: 0 8px 32px rgba(0,0,0,0.08);
+            --shadow-hover: 0 16px 48px rgba(0,0,0,0.15);
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.06);
+            --gradient-hero: linear-gradient(135deg, #FFF8E7 0%, #FFE8E0 50%, #FFF0D4 100%);
+            --gradient-splash: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --nav-bg: rgba(255,255,255,0.95);
+            --modal-overlay: rgba(0,0,0,0.6);
+            --card-hover-bg: #FFF5F5;
+            --badge-bg: rgba(255,107,107,0.1);
+            --input-bg: #FFFFFF;
+            --star-inactive: #DDD;
+            --amazon-orange: #FF9900;
+            --success: #4CAF50;
+            --error: #FF5252;
+        }
+
+        .dark-mode {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #252540;
+            --text-primary: #E8E8E8;
+            --text-secondary: #A0A0B0;
+            --border: #3A3A50;
+            --shadow: 0 8px 32px rgba(0,0,0,0.4);
+            --shadow-hover: 0 16px 48px rgba(0,0,0,0.6);
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
+            --gradient-hero: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --gradient-splash: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --nav-bg: rgba(26,26,46,0.95);
+            --modal-overlay: rgba(0,0,0,0.8);
+            --card-hover-bg: #2A2A45;
+            --badge-bg: rgba(255,107,107,0.2);
+            --input-bg: #1E1E35;
+            --star-inactive: #555;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Baloo 2', cursive;
+            line-height: 1.2;
+        }
+
+        button {
+            cursor: pointer;
+            font-family: 'Quicksand', sans-serif;
+            border: none;
+            outline: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        a { text-decoration: none; color: inherit; transition: all 0.3s ease; }
+        img { max-width: 100%; display: block; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ============ FLOATING LOGO ANIMATIONS ============ */
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-8px) rotate(1deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-4px) rotate(-1deg); }
+        }
+
+        /* ============ DECORATIVE ELEMENTS ============ */
+        .floating-decoration {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatDecor 6s ease-in-out infinite;
+            opacity: 0.15;
+            font-size: 40px;
+        }
+
+        .floating-decoration:nth-child(odd) { animation-duration: 8s; animation-delay: 2s; }
+        .floating-decoration:nth-child(3n) { animation-duration: 7s; animation-delay: 4s; }
+
+        @keyframes floatDecor {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(-10px) rotate(-5deg); }
+            75% { transform: translateY(-30px) rotate(3deg); }
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-1 { width: 100px; height: 40px; top: 10%; left: 5%; animation: cloudFloat 20s linear infinite; }
+        .cloud-2 { width: 80px; height: 35px; top: 20%; right: 10%; animation: cloudFloat 25s linear infinite reverse; }
+        .cloud-3 { width: 120px; height: 45px; bottom: 30%; left: 15%; animation: cloudFloat 22s linear infinite; }
+
+        @keyframes cloudFloat {
+            from { transform: translateX(-100px); }
+            to { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        .stars-decoration {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
+
+        /* ============ SPLASH SCREEN ============ */
+        #splashScreen {
+            position: fixed;
+            inset: 0;
+            background: var(--gradient-splash);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #splashScreen.hide {
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(1.1);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .splash-content { text-align: center; }
+
+        .splash-logo-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 40px;
+            position: relative;
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            25% { transform: translateY(-15px) rotate(3deg); }
+            75% { transform: translateY(-5px) rotate(-3deg); }
+        }
+
+        .splash-logo-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 4px solid rgba(255,107,107,0.3);
+            animation: pulseRing 2s ease-in-out infinite;
+        }
+
+        .splash-logo-ring:nth-child(2) {
+            animation-delay: 0.5s;
+            inset: 10px;
+            border-color: rgba(255,217,61,0.3);
+        }
+
+        .splash-logo-ring:nth-child(3) {
+            animation-delay: 1s;
+            inset: 20px;
+            border-color: rgba(79,195,247,0.3);
+        }
+
+        @keyframes pulseRing {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+
+        .splash-logo-inner {
+            position: absolute;
+            inset: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1F4B43, #2E6E5D);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px rgba(255,107,107,0.3);
+        }
+
+        .splash-logo-inner svg { width: 70%; height: 70%; }
+
+        .splash-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: clamp(36px, 6vw, 52px);
+            font-weight: 800;
+            background: linear-gradient(45deg, #FFD93D, #FF6B6B, #4FC3F7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .splash-subtitle {
+            font-size: clamp(16px, 3vw, 22px);
+            color: #FF6B6B;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .splash-loader {
+            width: 50px;
+            height: 50px;
+            margin: 40px auto 0;
+            position: relative;
+        }
+
+        .splash-loader::before, .splash-loader::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
+
+        .splash-loader::before {
+            border-top-color: #FF6B6B;
+            animation: spin 1s linear infinite;
+        }
+
+        .splash-loader::after {
+            border-bottom-color: #FFD93D;
+            animation: spin 1.5s linear infinite reverse;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============ MAIN CONTENT ============ */
+        #mainContent {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        #mainContent.visible { opacity: 1; transform: translateY(0); }
+
+        /* ============ NAVIGATION ============ */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            transition: all 0.5s ease;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            border: 2px solid var(--sun);
+            animation: gentleFloat 4s ease-in-out infinite;
+        }
+
+        .nav-logo:hover {
+            transform: rotate(-10deg) scale(1.1);
+            box-shadow: 0 0 25px rgba(255,217,61,0.5);
+            border-color: var(--coral);
+        }
+
+        .nav-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nav-title {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            font-weight: 700;
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--coral);
+            background: var(--badge-bg);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--coral);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after { width: 60%; }
+
+        .theme-toggle-btn {
+            width: 56px;
+            height: 30px;
+            background: linear-gradient(135deg, #FFD93D, #FFC107);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            margin-left: 12px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .dark-mode .theme-toggle-btn { background: linear-gradient(135deg, #4A4A6A, #3A3A5A); }
+
+        .theme-toggle-btn::before {
+            content: '☀️';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            transition: all 0.4s ease;
+            z-index: 2;
+        }
+
+        .dark-mode .theme-toggle-btn::before { content: '🌙'; }
+
+        .theme-toggle-btn::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dark-mode .theme-toggle-btn::after {
+            left: 29px;
+            background: #1a1a2e;
+        }
+
+        /* ============ HERO SECTION ============ */
+        .hero {
+            padding: 80px 0 60px;
+            position: relative;
+            overflow: hidden;
+            background: var(--gradient-hero);
+            transition: background 0.5s ease;
+        }
+
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: clamp(36px, 5vw, 58px);
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(45deg, var(--forest), var(--coral), var(--sun));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 36px;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 16px 36px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+            color: white;
+            box-shadow: 0 8px 30px rgba(255,107,107,0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255,107,107,0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            border-color: var(--coral);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 24px 32px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.4s ease;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-number {
+            font-family: 'Baloo 2', cursive;
+            font-size: 40px;
+            color: var(--coral);
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .hero-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hero-logo {
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+
+        .hero-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .hero-floating-logo {
+            border: 4px solid var(--coral);
+            animation: gentleFloat 5s ease-in-out infinite;
+            border-radius: 24px;
+            box-shadow: 0 0 30px rgba(255,107,107,0.3);
+            overflow: hidden;
+        }
+
+        .hero-floating-logo:hover {
+            box-shadow: 0 0 40px rgba(255,107,107,0.5);
+            border-color: var(--sun);
+        }
+
+        /* ============ SECTIONS ============ */
+        .section { padding: 80px 0; position: relative; }
+
+        .section-alt {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 56px;
+            position: relative;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            background: var(--badge-bg);
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--coral);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 5vw, 44px);
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .section-line {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--coral), var(--sun));
+            margin: 0 auto 20px;
+            border-radius: 2px;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ============ CATEGORIES GRID ============ */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .category-card {
+            background: var(--bg-primary);
+            border-radius: 24px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--shadow-card);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode .category-card { background: var(--bg-card); }
+
+        .category-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--coral);
+        }
+
+        .category-card.active-filter {
+            border-color: var(--coral) !important;
+            background: var(--badge-bg) !important;
+            box-shadow: 0 0 0 4px rgba(255,107,107,0.15);
+        }
+
+        .category-emoji {
+            font-size: 52px;
+            margin-bottom: 16px;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .category-card:hover .category-emoji {
+            transform: scale(1.3) rotate(15deg);
+        }
+
+        .category-name {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ============ SEARCH ============ */
+        .search-container {
+            max-width: 650px;
+            margin: 0 auto 40px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 6px;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border);
+            transition: all 0.4s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--coral);
+            box-shadow: 0 0 0 6px rgba(255,107,107,0.1), var(--shadow-hover);
+        }
+
+        .search-icon {
+            padding: 0 16px;
+            color: var(--text-secondary);
+        }
+
+        #searchInput {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 16px 8px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        #searchInput::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        #clearSearch {
+            width: 44px;
+            height: 44px;
+            background: var(--coral);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 4px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #clearSearch.visible { opacity: 1; visibility: visible; }
+
+        #clearSearch:hover {
+            background: var(--coral-dark);
+            transform: rotate(90deg);
+        }
+
+        .active-filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--coral);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============ BOOKS GRID ============ */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 28px;
+        }
+
+        .book-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .book-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--shadow-hover);
+            background: var(--card-hover-bg);
+        }
+
+        .book-cover {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.6s ease;
+        }
+
+        .book-card:hover .book-cover img { transform: scale(1.12); }
+
+        .book-cover-fallback { font-size: 64px; opacity: 0.5; }
+
+        .book-category-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--bg-card);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            z-index: 3;
+            border: 1px solid var(--border);
+        }
+
+        .book-info {
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .book-title {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-primary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .book-author {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .book-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 18px;
+            color: var(--sun);
+        }
+
+        .book-rating .rating-number {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .review-count-badge {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .loading-state, .empty-state {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .loading-spinner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 4px solid var(--border);
+            border-radius: 50%;
+        }
+
+        .loading-spinner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 4px solid transparent;
+            border-top-color: var(--coral);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* ============ CONTACT SECTION ============ */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
+        }
+
+        .contact-card {
+            background: var(--bg-primary);
+            border-radius: 28px;
+            padding: 40px 28px;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            transition: all 0.4s ease;
+            border: 1px solid var(--border);
+        }
+
+        .dark-mode .contact-card { background: var(--bg-card); }
+
+        .contact-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .contact-icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 36px;
+            transition: all 0.4s ease;
+        }
+
+        .contact-card:nth-child(1) .contact-icon-circle { background: #FFE0E0; color: #FF5252; }
+        .contact-card:nth-child(2) .contact-icon-circle { background: #E8F5E9; color: #4CAF50; }
+        .contact-card:nth-child(3) .contact-icon-circle { background: #E3F2FD; color: #2196F3; }
+
+        .contact-card h3 { font-size: 22px; margin-bottom: 8px; }
+
+        .contact-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .contact-value {
+            font-weight: 800;
+            font-size: 16px;
+            margin-bottom: 24px;
+            word-break: break-all;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            color: white;
+            font-weight: 800;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-btn:hover { transform: scale(1.04); }
+
+        .contact-btn.email-btn { background: linear-gradient(135deg, #FF6B6B, #FF5252); }
+        .contact-btn.whatsapp-btn { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+        .contact-btn.telegram-btn { background: linear-gradient(135deg, #2196F3, #1976D2); }
+
+        /* ============ FOOTER ============ */
+        footer {
+            background: var(--forest);
+            color: white;
+            text-align: center;
+            padding: 48px 20px;
+            position: relative;
+        }
+
+        .footer-logo {
+            width: 360px;
+            height: 360px;
+            margin: 0 auto 16px;
+            background: rgba(57, 126, 92, 0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .footer-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .footer-floating-logo {
+            border: 3px solid var(--sun);
+            animation: gentleFloat 4.5s ease-in-out infinite;
+            border-radius: 24px;
+            box-shadow: 0 0 25px rgba(255,217,61,0.3);
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            position: relative;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .footer-floating-logo:hover {
+            box-shadow: 0 0 40px rgba(255,217,61,0.5);
+            border-color: var(--coral);
+        }
+
+        .footer-floating-logo img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        .footer-brand {
+            font-family: 'Baloo 2', cursive;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        footer p {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+        }
+
+        /* ============ SCROLL TO TOP ============ */
+        .scroll-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+            color: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(255,107,107,0.4);
+            transition: all 0.4s ease;
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover { transform: translateY(-6px) scale(1.1); }
+
+        /* ============ MODAL ============ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: var(--bg-primary);
+            border-radius: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 36px;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            transform: translateY(30px);
+            transition: transform 0.4s ease;
+        }
+
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            background: var(--coral);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .modal-close:hover {
+            background: var(--coral-dark);
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .modal-cover {
+            width: 120px;
+            height: 160px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-card);
+        }
+
+        .modal-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 26px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .modal-author {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .modal-category-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--sun);
+            color: var(--forest);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .modal-amazon-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #FF9900, #FFB700);
+            color: #111;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 14px;
+            margin-top: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,153,0,0.3);
+        }
+
+        .modal-amazon-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,153,0,0.5);
+        }
+
+        /* ============ REVIEW SECTION ============ */
+        .review-section {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .review-section h4 {
+            font-size: 18px;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .star-picker {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .star-btn {
+            font-size: 36px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--star-inactive);
+            transition: all 0.2s ease;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .star-btn.active {
+            color: #FFD93D;
+            animation: starPop 0.3s ease;
+        }
+
+        .star-btn:hover { transform: scale(1.3); }
+
+        @keyframes starPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+
+        #reviewText {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 90px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #reviewText:focus {
+            border-color: var(--coral);
+            box-shadow: 0 0 0 4px rgba(255,107,107,0.1);
+        }
+
+        #submitReview {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+            color: white;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 16px;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #submitReview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,107,107,0.4);
+        }
+
+        #submitReview:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .reviews-container h4 {
+            font-size: 18px;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .review-item {
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--sun);
+            animation: fadeInUp 0.3s ease;
+            position: relative;
+        }
+
+        .review-stars {
+            font-size: 18px;
+            color: var(--sun);
+            margin-bottom: 8px;
+        }
+
+        .review-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .review-date {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .no-reviews {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 24px 0;
+            font-size: 15px;
+        }
+
+        /* ============ PARTICLES ============ */
+        .particles-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 16px;
+            opacity: 0.15;
+            animation: particleFloat 10s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { transform: translate(0,0) rotate(0deg); opacity: 0.15; }
+            20% { transform: translate(20px,-50px) rotate(72deg); opacity: 0.3; }
+            40% { transform: translate(-10px,-100px) rotate(144deg); opacity: 0.15; }
+            60% { transform: translate(-25px,-50px) rotate(216deg); opacity: 0.3; }
+            80% { transform: translate(15px,-20px) rotate(288deg); opacity: 0.15; }
+        }
+
+        /* ============ NOTIFICATION ============ */
+        .notification {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--forest);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-weight: 700;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        .notification.success { background: #4CAF50; }
+        .notification.error { background: #FF5252; }
+
+        /* ============ RESPONSIVE DESIGN ============ */
+        @media (max-width: 768px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 40px;
+            }
+
+            .hero-buttons { justify-content: center; }
+            .hero-stats { justify-content: center; }
+
+            .nav .container { flex-wrap: wrap; gap: 12px; }
+            .nav-links { width: 100%; justify-content: center; }
+
+            .section-title { font-size: 32px; }
+            .stat-card { padding: 16px 20px; }
+            .stat-number { font-size: 32px; }
+            .modal-header { flex-direction: column; align-items: center; text-align: center; }
+            .hero-logo { width: 200px; height: 200px; }
+            .footer-logo { width: 250px; height: 250px; }
+            .footer-floating-logo { width: 150px; height: 150px; }
+        }
+
+        @media (max-width: 480px) {
+            .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .category-card { padding: 20px 12px; }
+            .category-emoji { font-size: 36px; }
+            .books-grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .hero-buttons { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+            .footer-logo { width: 200px; height: 200px; }
+            .footer-floating-logo { width: 120px; height: 120px; }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen" role="dialog" aria-label="Loading">
+        <div class="splash-content">
+            <div class="splash-logo-container">
+                <div class="splash-logo-ring"></div>
+                <div class="splash-logo-ring"></div>
+                <div class="splash-logo-ring"></div>
+                <div class="splash-logo-inner">
+                    <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                        <circle cx="50" cy="42" r="20" fill="#FF6B6B"/>
+                        <circle cx="43" cy="40" r="4" fill="white"/>
+                        <circle cx="57" cy="40" r="4" fill="white"/>
+                        <circle cx="46" cy="42" r="1.5" fill="#1F4B43"/>
+                        <circle cx="54" cy="42" r="1.5" fill="#1F4B43"/>
+                        <ellipse cx="50" cy="48" rx="5" ry="3" fill="#1F4B43"/>
+                        <path d="M35 30L28 18L38 28Z" fill="#FF6B6B"/>
+                        <path d="M65 30L72 18L62 28Z" fill="#FF6B6B"/>
+                        <rect x="35" y="60" width="30" height="20" rx="3" fill="#4FC3F7" stroke="#2196F3" stroke-width="1.5"/>
+                        <line x1="50" y1="60" x2="50" y2="80" stroke="#2196F3" stroke-width="1"/>
+                        <circle cx="30" cy="30" r="2" fill="#FFD93D" opacity="0.8"/>
+                        <circle cx="70" cy="25" r="1.5" fill="#FFD93D" opacity="0.8"/>
+                        <circle cx="25" cy="50" r="1.5" fill="#FFD93D" opacity="0.6"/>
+                        <circle cx="75" cy="55" r="2" fill="#FFD93D" opacity="0.6"/>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="splash-title">CHILDREN HAVE A LIBRARY</h1>
+            <p class="splash-subtitle">Story Forest</p>
+            <div class="splash-loader" aria-label="Loading"></div>
+        </div>
+    </div>
+
+    <!-- PARTICLES BACKGROUND -->
+    <div class="particles-container" id="particles" aria-hidden="true"></div>
+
+    <!-- MAIN CONTENT -->
+    <div id="mainContent">
+        <!-- NAVIGATION -->
+        <nav class="nav" role="navigation" aria-label="Main navigation">
+            <div class="container">
+                <div class="nav-brand">
+                    <div class="nav-logo">
+                        <img src="FullLogo.jpg.jpeg" alt="Logo" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <span class="nav-title">CHILDREN HAVE A LIBRARY</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#books" class="nav-link">📚 Library</a>
+                    <a href="#categories" class="nav-link">🏷️ Categories</a>
+                    <a href="#contact" class="nav-link">💌 Contact</a>
+                    <div class="theme-toggle-btn" id="themeToggle" role="button" aria-label="Toggle theme" tabindex="0"></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- HERO SECTION -->
+        <section class="hero" aria-label="Hero">
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+            <div class="cloud cloud-3"></div>
+            <span class="floating-decoration" style="top:10%;left:5%;">🌟</span>
+            <span class="floating-decoration" style="top:20%;right:8%;">📚</span>
+            <span class="floating-decoration" style="bottom:30%;left:10%;">🦊</span>
+            <span class="floating-decoration" style="top:50%;right:5%;">⭐</span>
+            <span class="floating-decoration" style="bottom:20%;right:15%;">🌈</span>
+            <span class="floating-decoration" style="top:60%;left:3%;">🎨</span>
+            <span class="floating-decoration stars-decoration" style="top:15%;left:30%;">✨</span>
+            <span class="floating-decoration stars-decoration" style="top:25%;right:25%;">💫</span>
+            
+            <div class="container">
+                <div class="hero-text">
+                    <h1>Every great story starts with one page</h1>
+                    <p>Browse a magical shelf of children's books, read what other kids thought, and bring a new favorite home!</p>
+                    <div class="hero-buttons">
+                        <a href="#books" class="btn btn-primary">📚 Browse Library</a>
+                        <a href="#contact" class="btn btn-secondary">💌 Contact Us</a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="statBooks">0</div>
+                            <div class="stat-label">Books on Shelf</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statReviews">0</div>
+                            <div class="stat-label">Kid Reviews</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-logo-container">
+                    <div class="hero-logo hero-floating-logo">
+                        <img src="lo.png" alt="CHILDREN HAVE A LIBRARY Logo">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CATEGORIES SECTION -->
+        <section class="section section-alt" id="categories" aria-label="Book categories">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Explore</div>
+                    <h2 class="section-title">Magical Categories</h2>
+                    <div class="section-line"></div>
+                    <p class="section-subtitle">Find your perfect story in our wonderful categories</p>
+                </div>
+                <div class="categories-grid" id="categoriesGrid"></div>
+            </div>
+        </section>
+
+        <!-- BOOKS SECTION -->
+        <section class="section" id="books" aria-label="Book library">
+            <span class="floating-decoration" style="top:5%;left:3%;">📖</span>
+            <span class="floating-decoration" style="bottom:10%;right:5%;">🦉</span>
+            
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Discover</div>
+                    <h2 class="section-title">Our Book Shelf</h2>
+                    <div class="section-line"></div>
+                    <p class="section-subtitle">Search and discover amazing children's books</p>
+                </div>
+                <div class="search-container">
+                    <div class="search-box">
+                        <div class="search-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Search by title, author, or category..." aria-label="Search books">
+                        <button id="clearSearch" title="Clear search" aria-label="Clear search">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="activeFilterContainer"></div>
+                <div class="books-grid" id="booksGrid">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p style="font-size:18px;font-weight:600;">Loading magical stories...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section class="section section-alt" id="contact" aria-label="Contact us">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Connect</div>
+                    <h2 class="section-title">Get in Touch</h2>
+                    <div class="section-line"></div>
+                    <p class="section-subtitle">We'd love to hear from you!</p>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon-circle" aria-hidden="true">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                        </div>
+                        <h3>Email Us</h3>
+                        <p class="contact-desc">We'll respond within 24 hours</p>
+                        <p class="contact-value" style="color:#FF5252;">g.abudagel@azu.edu.ly</p>
+                        <a href="mailto:g.abudagel@azu.edu.ly" class="contact-btn email-btn">Send Email</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon-circle" aria-hidden="true">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+                            </svg>
+                        </div>
+                        <h3>WhatsApp</h3>
+                        <p class="contact-desc">Quick replies during working hours</p>
+                        <p class="contact-value" style="color:#4CAF50;">+218 91-331-4249</p>
+                        <a href="https://wa.me/218913314249" target="_blank" rel="noopener noreferrer" class="contact-btn whatsapp-btn">Start Chat</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon-circle" aria-hidden="true">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                            </svg>
+                        </div>
+                        <h3>Telegram</h3>
+                        <p class="contact-desc">Available anytime</p>
+                        <p class="contact-value" style="color:#2196F3;">+218 91-331-4249</p>
+                        <a href="https://t.me/00218913314249" target="_blank" rel="noopener noreferrer" class="contact-btn telegram-btn">Open Telegram</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <div class="footer-floating-logo">
+                <img src="lo.png" alt="CHILDREN HAVE A LIBRARY Logo">
+            </div>
+            <div class="footer-brand">CHILDREN HAVE A LIBRARY</div>
+            <p>© 2026 Story Forest. All rights reserved.</p>
+            <p>Made with ❤️ for kids everywhere!</p>
+        </footer>
+    </div>
+
+    <!-- BOOK MODAL -->
+    <div class="modal-overlay" id="bookModal" role="dialog" aria-modal="true" aria-label="Book details">
+        <div class="modal-box">
+            <button class="modal-close" id="closeModal" aria-label="Close modal">✕</button>
+            <div class="modal-header">
+                <div class="modal-cover">
+                    <img id="modalCover" src="" alt="Book cover">
+                </div>
+                <div>
+                    <h3 class="modal-title" id="modalTitle"></h3>
+                    <p class="modal-author" id="modalAuthor"></p>
+                    <span class="modal-category-badge" id="modalCategoryBadge"></span>
+                    <div id="modalAmazonContainer" style="margin-top: 8px;"></div>
+                </div>
+            </div>
+            <div class="review-section">
+                <h4>✍️ Write a Review</h4>
+                <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Rating">
+                    <button class="star-btn" data-val="1" aria-label="1 star">☆</button>
+                    <button class="star-btn" data-val="2" aria-label="2 stars">☆</button>
+                    <button class="star-btn" data-val="3" aria-label="3 stars">☆</button>
+                    <button class="star-btn" data-val="4" aria-label="4 stars">☆</button>
+                    <button class="star-btn" data-val="5" aria-label="5 stars">☆</button>
+                </div>
+                <textarea id="reviewText" placeholder="Share your thoughts about this book... (min 10 characters)" aria-label="Review text"></textarea>
+                <button id="submitReview">📝 Submit Review</button>
+            </div>
+            <div class="reviews-container">
+                <h4>💬 Reviews</h4>
+                <div id="reviewsContainer">
+                    <p class="no-reviews">Loading reviews...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCROLL TO TOP -->
+    <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+    <!-- NOTIFICATION -->
+    <div class="notification" id="notification" role="alert" aria-live="polite"></div>
+
+    <script>
+        // ============ FIREBASE CONFIG ============
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnoQxH4ox85hOoIf_ka_5K1Dbub3uStsQ",
+            authDomain: "kids-f2031.firebaseapp.com",
+            databaseURL: "https://kids-f2031-default-rtdb.firebaseio.com",
+            projectId: "kids-f2031",
+            storageBucket: "kids-f2031.firebasestorage.app",
+            messagingSenderId: "832514915347",
+            appId: "1:832514915347:web:a3179a1d708d043b4fd3e6",
+            measurementId: "G-182PQM53WS"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        db.enablePersistence().catch(err => console.warn('Offline persistence:', err.code));
+        
+        console.log('✅ CHILDREN HAVE A LIBRARY - Story Forest Initialized');
+        console.log('📚 Collection: kids_books');
+        console.log('⏰ Reviews auto-delete after 1 year');
+
+        function showNotification(m, t) {
+            const n = document.getElementById('notification');
+            n.textContent = m;
+            n.className = 'notification ' + (t || 'success') + ' show';
+            clearTimeout(n._timeout);
+            n._timeout = setTimeout(() => n.classList.remove('show'), 3000);
+        }
+
+        function escapeHTML(s) {
+            if (typeof s !== 'string') return '';
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function timeAgo(timestamp) {
+            if (!timestamp) return '';
+            const now = new Date();
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            if (seconds < 2592000) return Math.floor(seconds / 86400) + 'd ago';
+            if (seconds < 31536000) return Math.floor(seconds / 2592000) + 'mo ago';
+            return Math.floor(seconds / 31536000) + 'y ago';
+        }
+
+        const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+        async function cleanupOldReviews() {
+            try {
+                const cutoffTime = new Date(Date.now() - ONE_YEAR_MS);
+                const booksSnapshot = await db.collection('kids_books').get();
+                
+                for (const bookDoc of booksSnapshot.docs) {
+                    const reviewsSnapshot = await db.collection('kids_books')
+                        .doc(bookDoc.id)
+                        .collection('reviews')
+                        .where('createdAt', '<', cutoffTime)
+                        .get();
+                    
+                    const batch = db.batch();
+                    reviewsSnapshot.forEach(reviewDoc => {
+                        batch.delete(reviewDoc.ref);
+                    });
+                    
+                    if (reviewsSnapshot.size > 0) {
+                        await batch.commit();
+                        console.log(`🧹 Cleaned ${reviewsSnapshot.size} old reviews`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error cleaning old reviews:', error);
+            }
+        }
+
+        cleanupOldReviews();
+        setInterval(cleanupOldReviews, 24 * 60 * 60 * 1000);
+
+        const splashScreen = document.getElementById('splashScreen');
+        const mainContent = document.getElementById('mainContent');
+
+        function initializeTheme() {
+            const s = localStorage.getItem('theme');
+            if (s === 'dark') document.body.classList.add('dark-mode');
+            else if (s === 'light') document.body.classList.remove('dark-mode');
+            else document.body.classList.add('dark-mode');
+        }
+
+        function handleSplashScreen() {
+            const s = localStorage.getItem('theme');
+            if (s) {
+                setTimeout(() => {
+                    splashScreen.classList.add('hide');
+                    mainContent.classList.add('visible');
+                }, 1500);
+                return;
+            }
+            setTimeout(() => {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+            }, 1800);
+            setTimeout(() => {
+                splashScreen.classList.add('hide');
+                mainContent.classList.add('visible');
+            }, 2500);
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            if (document.body.classList.contains('dark-mode')) {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        function createParticles() {
+            const c = document.getElementById('particles');
+            const s = ['●', '◆', '▲', '■', '★', '❤️', '🌟', '📚', '🦊', '⭐'];
+            const cl = ['#FF6B6B', '#FFD93D', '#4FC3F7', '#81C784', '#BA68C8'];
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = s[Math.floor(Math.random() * s.length)];
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = (Math.random() * 8 + 6) + 's';
+                p.style.fontSize = (Math.random() * 18 + 10) + 'px';
+                p.style.color = cl[Math.floor(Math.random() * cl.length)];
+                c.appendChild(p);
+            }
+        }
+
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => scrollTopBtn.classList.toggle('visible', window.scrollY > 500), { passive: true });
+        scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        const categories = [
+            { name: 'Moral', emoji: '🌟' },
+            { name: 'Fiction', emoji: '📖' },
+            { name: 'Non Fiction', emoji: '📚' },
+            { name: 'Science Fiction', emoji: '🚀' },
+            { name: 'Mystery', emoji: '🔍' },
+            { name: 'Comics', emoji: '💭' },
+            { name: 'Fantasy', emoji: '🧙' },
+            { name: 'Fairy Tale', emoji: '🧚' },
+            { name: 'Biography', emoji: '👤' },
+            { name: 'Ghost Story', emoji: '👻' },
+            { name: 'Others', emoji: '📦' }
+        ];
+
+        let activeFilter = null;
+        let allBooks = [];
+        let currentBook = null;
+        let selectedStars = 0;
+
+        function renderCategories() {
+            const g = document.getElementById('categoriesGrid');
+            if (!g) return;
+            g.innerHTML = categories.map((c, i) => `
+                <div class="category-card ${activeFilter === c.name ? 'active-filter' : ''}" 
+                     style="animation-delay:${i * 0.1}s" 
+                     onclick="filterByCategory('${c.name.replace(/'/g, "\\'")}')"
+                     role="button"
+                     tabindex="0">
+                    <span class="category-emoji">${c.emoji}</span>
+                    <div class="category-name">${c.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function filterByCategory(c) {
+            if (activeFilter === c) {
+                activeFilter = null;
+                document.getElementById('searchInput').value = '';
+                renderBooks(allBooks);
+                updateFilterBadge();
+                renderCategories();
+                updateClearSearchVisibility();
+                return;
+            }
+            activeFilter = c;
+            document.getElementById('searchInput').value = '';
+            const filteredBooks = allBooks.filter(b => b.category === c);
+            renderBooks(filteredBooks);
+            updateFilterBadge();
+            renderCategories();
+            updateClearSearchVisibility();
+            document.getElementById('books').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateFilterBadge() {
+            const c = document.getElementById('activeFilterContainer');
+            if (!c) return;
+            if (activeFilter) {
+                const cat = categories.find(x => x.name === activeFilter);
+                c.innerHTML = `
+                    <div class="active-filter-badge" onclick="clearFilter()" role="button" tabindex="0">
+                        <span>${cat ? cat.emoji : ''} ${activeFilter}</span>
+                        <span>×</span>
+                    </div>`;
+            } else {
+                c.innerHTML = '';
+            }
+        }
+
+        function clearFilter() {
+            activeFilter = null;
+            document.getElementById('searchInput').value = '';
+            renderBooks(allBooks);
+            updateFilterBadge();
+            renderCategories();
+            updateClearSearchVisibility();
+        }
+
+        function loadBooks() {
+            const bg = document.getElementById('booksGrid');
+            if (bg) bg.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p style="font-size:18px;font-weight:600;">Loading magical stories...</p></div>';
+            
+            try {
+                db.collection('kids_books').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                    allBooks = [];
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        allBooks.push({
+                            id: doc.id,
+                            title: d.title || 'Untitled',
+                            author: d.author || 'Unknown',
+                            category: d.category || '',
+                            asin: d.asin || '',
+                            amazonLink: d.amazonLink || '',
+                            imageUrl: d.imageUrl || '',
+                            avgRating: d.avgRating || 0
+                        });
+                    });
+                    
+                    document.getElementById('statBooks').textContent = allBooks.length;
+                    
+                    if (activeFilter) {
+                        renderBooks(allBooks.filter(b => b.category === activeFilter));
+                    } else {
+                        renderBooks(allBooks);
+                    }
+                    
+                    countReviews();
+                }, error => {
+                    console.error('Error:', error);
+                    if (bg) bg.innerHTML = '<div class="empty-state"><div style="font-size:60px;">😢</div><p>Could not load books.</p><button class="btn btn-primary" onclick="loadBooks()">Retry</button></div>';
+                });
+            } catch(e) {
+                console.error('Firebase error:', e);
+            }
+        }
+
+        async function countReviews() {
+            let t = 0;
+            for (const b of allBooks) {
+                try {
+                    t += (await db.collection('kids_books').doc(b.id).collection('reviews').get()).size;
+                } catch(e) {}
+            }
+            document.getElementById('statReviews').textContent = t;
+        }
+
+        function renderBooks(books) {
+            const g = document.getElementById('booksGrid');
+            if (!g) return;
+            
+            if (!books || books.length === 0) {
+                g.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size:60px;">📚</div>
+                        <p>${activeFilter ? `No books in "${activeFilter}" category yet.` : 'No books found.'}</p>
+                        ${activeFilter ? '<button class="btn btn-primary" onclick="clearFilter()" style="margin-top:16px;">Show All Books</button>' : ''}
+                    </div>`;
+                return;
+            }
+            
+            g.innerHTML = books.map(book => {
+                const title = escapeHTML(book.title || 'Untitled');
+                const author = escapeHTML(book.author || 'Unknown');
+                const img = book.imageUrl || '';
+                const rating = Math.round(book.avgRating || 0);
+                const category = escapeHTML(book.category || '');
+                const starsHtml = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                
+                return `
+                <div class="book-card">
+                    <div class="book-cover" onclick="openModal('${book.id}')" title="Click for details">
+                        ${img 
+                            ? `<img src="${img}" alt="${title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                               <div class="book-cover-fallback" style="display:none;">📖</div>` 
+                            : '<div class="book-cover-fallback">📖</div>'}
+                        ${category ? `<span class="book-category-badge">${category}</span>` : ''}
+                    </div>
+                    <div class="book-info" onclick="openModal('${book.id}')">
+                        <div class="book-title">${title}</div>
+                        <div class="book-author">by ${author}</div>
+                        <div class="book-rating">
+                            ${starsHtml}
+                            <span class="rating-number">${(book.avgRating || 0).toFixed(1)}</span>
+                        </div>
+                        <div class="review-count-badge">📝 Click to view & write reviews</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+
+        function updateClearSearchVisibility() {
+            if (searchInput.value.trim() || activeFilter) {
+                clearSearch.classList.add('visible');
+            } else {
+                clearSearch.classList.remove('visible');
+            }
+        }
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.trim().toLowerCase();
+            let src = activeFilter ? allBooks.filter(b => b.category === activeFilter) : allBooks;
+            
+            if (!q) {
+                renderBooks(src);
+                updateClearSearchVisibility();
+                return;
+            }
+            
+            const filtered = src.filter(b => 
+                (b.title || '').toLowerCase().includes(q) ||
+                (b.author || '').toLowerCase().includes(q) ||
+                (b.category || '').toLowerCase().includes(q)
+            );
+            renderBooks(filtered);
+            updateClearSearchVisibility();
+        });
+
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            if (activeFilter) {
+                renderBooks(allBooks.filter(b => b.category === activeFilter));
+            } else {
+                renderBooks(allBooks);
+            }
+            updateClearSearchVisibility();
+            searchInput.focus();
+        });
+
+        updateClearSearchVisibility();
+
+        const modal = document.getElementById('bookModal');
+        document.getElementById('closeModal').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        modal.addEventListener('click', e => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        function openModal(id) {
+            currentBook = allBooks.find(b => b.id === id);
+            if (!currentBook) return;
+
+            document.getElementById('modalCover').src = currentBook.imageUrl || '';
+            document.getElementById('modalTitle').textContent = currentBook.title || '';
+            document.getElementById('modalAuthor').textContent = 'by ' + (currentBook.author || 'Unknown');
+            document.getElementById('modalCategoryBadge').textContent = currentBook.category || '';
+
+            const amazonContainer = document.getElementById('modalAmazonContainer');
+            const amazonLink = currentBook.amazonLink || (currentBook.asin ? 'https://www.amazon.com/dp/' + currentBook.asin : '');
+            if (amazonLink) {
+                amazonContainer.innerHTML = `
+                    <a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="modal-amazon-btn">
+                        🛒 View on Amazon
+                    </a>`;
+            } else {
+                amazonContainer.innerHTML = '';
+            }
+
+            selectedStars = 0;
+            updateStarPicker();
+            document.getElementById('reviewText').value = '';
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            loadReviews(id);
+        }
+
+        const starPicker = document.getElementById('starPicker');
+        starPicker.querySelectorAll('.star-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                selectedStars = parseInt(b.dataset.val);
+                updateStarPicker();
+            });
+        });
+
+        function updateStarPicker() {
+            starPicker.querySelectorAll('.star-btn').forEach(b => {
+                const v = parseInt(b.dataset.val);
+                b.innerHTML = v <= selectedStars ? '★' : '☆';
+                b.classList.toggle('active', v <= selectedStars);
+            });
+        }
+
+        let reviewsUnsub = null;
+
+        function loadReviews(id) {
+            const c = document.getElementById('reviewsContainer');
+            if (!c) return;
+            if (reviewsUnsub) reviewsUnsub();
+            
+            try {
+                reviewsUnsub = db.collection('kids_books').doc(id).collection('reviews')
+                    .orderBy('createdAt', 'desc')
+                    .onSnapshot(snap => {
+                        if (snap.empty) {
+                            c.innerHTML = '<p class="no-reviews">No reviews yet. Be the first to review! 🌟</p>';
+                            return;
+                        }
+                        
+                        c.innerHTML = snap.docs.map(doc => {
+                            const r = doc.data();
+                            const reviewDate = r.createdAt ? r.createdAt.toDate() : null;
+                            const ageText = reviewDate ? timeAgo(reviewDate) : '';
+                            
+                            return `
+                                <div class="review-item">
+                                    <div class="review-stars">${'★'.repeat(r.rating || 0) + '☆'.repeat(5 - (r.rating || 0))}</div>
+                                    <p class="review-text">${escapeHTML(r.text || '')}</p>
+                                    ${ageText ? `<div class="review-date">📅 ${ageText}</div>` : ''}
+                                </div>`;
+                        }).join('');
+                    });
+            } catch(e) {
+                c.innerHTML = '<p class="no-reviews">Could not load reviews.</p>';
+            }
+        }
+
+        document.getElementById('submitReview').addEventListener('click', async () => {
+            if (!currentBook) return;
+            
+            const t = document.getElementById('reviewText').value.trim();
+            
+            if (selectedStars < 1) {
+                showNotification('Please choose a star rating! ⭐', 'error');
+                return;
+            }
+            if (!t) {
+                showNotification('Please write a review! ✍️', 'error');
+                return;
+            }
+            if (t.length < 10) {
+                showNotification('Review must be at least 10 characters!', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('submitReview');
+            btn.disabled = true;
+            btn.textContent = '⏳ Submitting...';
+            
+            try {
+                const ref = db.collection('kids_books').doc(currentBook.id);
+                
+                await ref.collection('reviews').add({
+                    rating: selectedStars,
+                    text: t,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                const snap = await ref.collection('reviews').get();
+                let total = 0, count = 0;
+                snap.forEach(doc => {
+                    total += doc.data().rating || 0;
+                    count++;
+                });
+                
+                await ref.update({
+                    avgRating: count > 0 ? total / count : 0
+                });
+                
+                document.getElementById('reviewText').value = '';
+                selectedStars = 0;
+                updateStarPicker();
+                showNotification('Review submitted! 🎉 (Reviews are kept for 1 year)', 'success');
+                
+            } catch(e) {
+                console.error('Error:', e);
+                showNotification('Error submitting review. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📝 Submit Review';
+            }
+        });
+
+        function init() {
+            initializeTheme();
+            handleSplashScreen();
+            createParticles();
+            renderCategories();
+            loadBooks();
+        }
+        
+        init();
+
+        console.log('🦊 CHILDREN HAVE A LIBRARY - Ready!');
+    </script>
+</body>
+</html>
